@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+            <title>OxTube</title>
+               
+                <link rel="stylesheet" href="css/themes/OxTube.css" />
+                <link rel="stylesheet" href="css/jquery.mobile.icons.min.css" />
+                <link rel="stylesheet" href="css/jquery.mobile.structure-1.4.2.min.css" />
+                <script src="jslib/jquery-1.11.0.js"></script>
+                <script src="jslib/jquery.mobile-1.4.2.min.js"></script>
+            
+        </head>
+        <body>
+         
+            <div data-role="page" id="dashboard">
+                
+                <div data-role="header" style="border-bottom-style:none">
+                    
+                    <a href="#menu-panel" id="menu-panel-button">Menu</a>
+                    
+                    <h1>Oxford Tube</h1>   
+                    
+                    <a href="index.html" class="ui-btn-right" id="direction-button">Destination</a>
+                    <!--the two things I took out of the above line are the button icon -- arrow-r and the data mini -- true-->
+                    
+                    <div data-role="navbar" id="departure-selector-A">
+	                   <ul>
+		                  <li><a href="index.html" id="departure-selector-1" style="font-size:xx-small"></a></li>
+                          <li><a href="index.html" id="departure-selector-2" style="font-size:xx-small"></a></li>
+                          <li><a href="index.html" id="departure-selector-3" style="font-size:xx-small"></a></li>
+                          <li><a href="index.html" id="departure-selector-4" style="font-size:xx-small"></a></li>
+                          <li><a href="index.html" id="departure-selector-5" style="font-size:xx-small"></a></li>
+                        </ul>
+                    </div><!-- /navbar a -->
+                    <div data-role="navbar" id="departure-selector-B">
+	                   <ul>
+		                  <li><a href="index.html" id="departure-selector-6" style="font-size:xx-small"></a></li>
+                          <li><a href="index.html" id="departure-selector-7" style="font-size:xx-small"></a></li> 
+                          <li><a href="index.html" id="departure-selector-8" style="font-size:xx-small"></a></li> 
+                          <li><a href="index.html" id="departure-selector-9" style="font-size:xx-small"></a></li> 
+                          <li><a href="index.html" id="departure-selector-10" style="font-size:xx-small"></a></li>                            
+	                   </ul>
+                    </div><!-- /navbar b -->
+                    
+                </div><!--close header-->
+            
+                <div data-role="content" id="result" style="margin:15px; text-align:center" class="ui-panel-page-container-a">Click the direction button above to select a destination</div>
+                
+                <div data-role="content" id="twitter" style="margin:15px; text-align:center; font-size:small" class="ui-panel-page-container-a">No Important Service Announcements<br>(via Facebook)</div>
+                
+<!--left hand panel-->                
+                <div data-role="panel" id="menu-panel" style="background-color:#c1272d">
+                    <a href="www.oxfordtube.com"  id="Website-link">Oxford Tube Website</a>
+                    <br>
+                    <br>
+                    <a href="www.oxfordtube.com"  id="Twitter-link">Oxford Tube Twitter</a>
+                    <br>
+                    <br>
+                    <a href="http://www.oxfordtube.com/buytickets.aspx"  id="Buy-tickets-link">Buy Tickets</a>
+                </div><!-- /panel -->
+                
+            </div><!--close page-->
+            
+            <script  type="text/javascript" src="jslib/OxTube.js"></script>
+           
+</body><!--close body-->
+</html>
