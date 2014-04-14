@@ -1,0 +1,36 @@
+{
+  "name": "Oxford Tube App",
+  
+  "description": "Access live Oxford Tube times",  
+  
+  "version": "0.2",
+  
+  "launch_path": "/index.html",
+  
+  "icons": {
+    "128": "/icons/ic_launcher_oxfordtube_hdpi.png"
+  },
+  
+  "type": "privileged",
+  
+  "developer": {
+    "name": "Sourdough Collective"
+  },
+  
+  "locales": {
+    "en": {
+      "name": "Oxford Tube App"
+    }
+  },
+  
+  "fullscreen": "true",
+  
+  "default_locale": "en",
+  
+  "permissions": {
+    "systemXHR": {
+        "description": "Required to retrieve RTPI data"
+    }
+  }
+
+}
