@@ -5,7 +5,7 @@
 var nextdestin;
 
 /*Destination variables*/
-/*constants: containing the two possible desinations*/
+/*constants: containing the two possible destinations*/
 var destinOx = "Oxford";
 var destinLo = "London";
 /*changeable -- used for top RHS button label, and also for changes*/
