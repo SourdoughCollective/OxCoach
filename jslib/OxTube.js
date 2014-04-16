@@ -48,7 +48,7 @@ var RTPIToOxStopY = [ "178724", "179163", "180825", "180511", "179977", "184791"
 var RTPIToLoStopID = [ "69326524", "69345627", "69345692", "69323265", "69347427", "69347625", "69325687", "69326542", "69345498 ", "Update" ];
 var RTPIToLoStopX = [ "451004", "451308", "451811", "452503", "453606", "454635", "455361", "456602", "472100", "Update" ];
 var RTPIToLoStopY = [ "206385", "205789", "206270", "206025", "206654", "207168", "207405", "207326", "197680", "Update" ];
-/*changeable: threse three arrays change depending on direction, taking the values of their related direction-constant arrays. They're then used in the URL*/
+/*changeable: threse three arrays change depending on destination, taking the values of their related direction-constant arrays. They're then used in the URL*/
 var RTPIStopIDarray;
 var RTPIStopXarray;
 var RTPIStopYarray;
@@ -85,13 +85,13 @@ function changeDestinTextVar() {
     }
 }
 
-/*Changes the direction button label the new destination (with reference to "destintext")*/
-function directionButtonText() {
+/*Changes the destination button label the new destination (with reference to "destintext")*/
+function destinationButtonText() {
     "use strict";
-    $("#direction-button").html("To " + destintext);
+    $("#destination-button").html("To " + destintext);
 }
              
-/*Replaces the navbar labels with new departure-stop options (with reference to "departurearray"). Also updates the current direction-specific arrays which will be used to call RTPI data when the departure stop is selected*/
+/*Replaces the navbar labels with new departure-stop options (with reference to "departurearray"). Also updates the current destination-specific arrays which will be used to call RTPI data when the departure stop is selected*/
 function departureSelector() {
     "use strict";
     var i;
@@ -197,12 +197,12 @@ function queryFacebook() {
 /*rules*/
                      
 /*1 -- Clicking the Direction Button changes... */
-$("#direction-button").click(function () {
+$("#destination-button").click(function () {
     "use strict";
-/*..."destintext" i.e. the variable for direction button label*/
+/*..."destintext" i.e. the variable for destination button label*/
     changeDestinTextVar();
-/*...the top right hand side direction button label*/
-    directionButtonText();
+/*...the top right hand side destination button label*/
+    destinationButtonText();
 /*...the horizontal departure stop selection menu labels*/
     departureSelector();
 /*...the instruction text*/
