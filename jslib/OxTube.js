@@ -22,36 +22,21 @@ var departurearray;
 
 /*Time variables*/
 /*changeable -- all used in the result panel*/
-var minutestogo; //minutes to go till next bus
+var minutestogo; //minutes to go till next bus (used to create timetogo variable)
+var timetogo; //time to go till next bus, either in minutes or in hours
 var RTPIlastchecked; //when the estimated time of depature was last checked
 var ETD; //estimated time of departure -- fetched from RTPI website as a five-character text string (HH:MM)
-
-/*these variables allow us to construct a full date from the ETD text string*/
-var ETDYear;
-var ETDMonth;
-var ETDDay;
-var ETDHours;
-var ETDMinutes;
-var ETDSeconds;
-var ETDMilliseconds;
-var ETDFull;
-
-/*estimated time of arrival -- not functional yet. Inserting "ETA.getHours() + ETA.getMinutes()" in the Result Panel didn't work*/
-//var ETAMinutes = (ETDMinutes + 80);
-//var ETA = new Date(ETDYear, ETDMonth, ETDDay, ETDHours, ETAMinutes, ETDSeconds, ETDMilliseconds);
+var mmtime;
+var mmhhtime;
+var fulltime;
+var ETDFull; //estimated time of departure -- turned from ETD into full time string
 
 /*Putting Together the RTPI URL for fetching data*/
 /*constant: For each direction, three arrays: containing RTPI's (1) ID numbers, (2) X coordinate, and (3) Y coordinate for each stop.*/
-var RTPIToOxStopID = [ "27245469", "27245473", "27247584", "27245367", "27245482", "27245426", "69345497", " - ", " - ", "Update" ];
-var RTPIToOxStopX = [ "528697", "528784", "527883", "525499", "524040", "507731", "471775", " - ", " - ", "Update" ];
-var RTPIToOxStopY = [ "178724", "179163", "180825", "180511", "179977", "184791", "197477", " - ", " - ", "Update" ];
-var RTPIToLoStopID = [ "69326524", "69345627", "69345692", "69323265", "69347427", "69347625", "69325687", "69326542", "69345498 ", "Update" ];
-var RTPIToLoStopX = [ "451004", "451308", "451811", "452503", "453606", "454635", "455361", "456602", "472100", "Update" ];
-var RTPIToLoStopY = [ "206385", "205789", "206270", "206025", "206654", "207168", "207405", "207326", "197680", "Update" ];
-/*changeable: threse three arrays change depending on destination, taking the values of their related direction-constant arrays. They're then used in the URL*/
-var RTPIStopIDarray;
-var RTPIStopXarray;
-var RTPIStopYarray;
+var RTPIToOx = [ [ "27245469", "528697", "178724" ], [ "27245473", "528784", "179163"], [ "27247584", "527883", "180825"], [ "27245367", "525499", "180511"], [ "27245482", "524040", "179977" ], [ "27245426", "507731", "184791"], [ "69345497", "471775", "197477"], [ " - ", " - ", " - " ], [ " - ", " - ", " - "], [ "Update", "Update", "Update" ] ];
+var RTPIToLo = [ [ "69326524", "451004", "206385" ], [ "69345627", "451308", "205789" ], [ "69345692", "451811", "206270" ], [ "69323265", "452503", "206025" ], [ "69347427", "453606", "206654" ], [ "69347625", "454635", "207168" ], [ "69325687", "455361", "207405" ], [ "69326542", "456602", "207326" ], [ "69345498", "472100", "197680"], [ "Update", "Update", "Update" ] ];
+var RTPIArray;
+//in each array, ten arrays = one for each stop in that direction. in each subarray, three items = StopID, Stop X coord, Stop Y coord.
 /*the final URL, constructed using fixed elements interspersed with values from the above three changeable arrays*/
 var RTPIURL;
 
@@ -59,19 +44,29 @@ var RTPIURL;
 var RTPIRequest; //function that makes the RTPI call
 var textresponse; //the response in text form
 var placefinder; // this variable helps locate the time of the next bus in the RTPI textresponse
+var placefinder2; // this variable helps locate the time of the next bus in the RTPI textresponse
+var placefinder3; // this variable helps locate the time of the next bus in the RTPI textresponse
 
 var i; //helps with looping
+var j; //helps with looping
+var k; //helps with looping
 var MyStopID; //used to select the right value from the arrays. Changes when a departure button is pressed.
 
-/*Facebook*/
-var FacebookRequest; //function that makes the Facebook call
-var FacebookURL;
-var FacebookResponse;
-var FacebookTime;
-var FacebookTweet;
-var Facebooklastchecked;
+/*Twitter*/
+var TwitterRequest; //function that makes the Twitter call
+var TwitterURL = "https://fierce-earth-8634.herokuapp.com/1.1/statuses/user_timeline.json?screen_name=Oxford_Tube&trim_user=t";
+var TwitterResponse; //what comes back from the Twitter call
+var TwitterTime; //parse Twitter call for time
+var TwitterTweet; //parse Twitter call for tweet
+var TwitterItem;
 
+/*Panel Text*/
+var ResultText; //This goes into the Result Panel
+var TwitterText; //This goes into the Twitter Panel
 
+var ToOxjourneytimearray =  [ "100", "95", "90", "85", "80", "60", "30", " - ", " - ", " - " ];
+var ToLojourneytimearray = [ "100", "95", "90", "85", "80", "75", "70", "65", "50", " - " ];
+var Journeytimearray;
 
 
 /*FUNCTIONS*/
@@ -86,9 +81,11 @@ function changeDestinTextVar() {
 }
 
 /*Changes the destination button label the new destination (with reference to "destintext")*/
-function destinationButtonText() {
+/*Plus the instructions in Result Panel upon choosing a new destination*/
+function changeDestinationButtonAndText() {
     "use strict";
     $("#destination-button").html("To " + destintext);
+    $("#result").html("Select a stop towards " + destintext);
 }
              
 /*Replaces the navbar labels with new departure-stop options (with reference to "departurearray"). Also updates the current destination-specific arrays which will be used to call RTPI data when the departure stop is selected*/
@@ -97,24 +94,16 @@ function departureSelector() {
     var i;
     if (nextdestin === undefined || nextdestin === "ToLon") {
         departurearray = ToOxDepart;
-        RTPIStopIDarray = RTPIToOxStopID;
-        RTPIStopXarray = RTPIToOxStopX;
-        RTPIStopYarray = RTPIToOxStopY;
+        RTPIArray = RTPIToOx;
+        Journeytimearray = ToOxjourneytimearray;
     } else if (nextdestin === "ToOxf") {
         departurearray = ToLoDepart;
-        RTPIStopIDarray = RTPIToLoStopID;
-        RTPIStopXarray = RTPIToLoStopX;
-        RTPIStopYarray = RTPIToLoStopY;
+        RTPIArray = RTPIToLo;
+        Journeytimearray = ToLojourneytimearray;
     }
     for (i = 0; i < departurebuttons.length; i++) {
         $(departurebuttons[i]).html(departurearray[i]);
     }
-}
-
-/*Instructions in Result Panel upon choosing a new destination*/
-function instructionText() {
-    "use strict";
-    $("#result").html("Select a stop towards " + destintext);
 }
 
 /*Toggles variable "nextdestin" (I use this at the end of the process -- so it sets the variable up for the next click)*/
@@ -130,19 +119,19 @@ function changeDestinVar() {
 /*Changes the Result Panel text once RTPI has been queried for next departure time*/
 function changeResultText() {
     "use strict";
-    $("#result").html("<p style='font-size:small'>The next bus to " + destintext + " leaves " + departurearray[MyStopID] + " in " + minutestogo + " minutes (at " + ETD + "). <br><br> Journey time takes around 100 minutes. <br><br></p><p style='font-size:xx-small'> Last updated on " + RTPIlastchecked + ". <a href='#' id='update'>Update?</a></p>"); //This text appears in the Result Panel
+    $("#result").html(ResultText); //This text appears in the Result Panel
 }
 
-/*Changes the Facebook Panel text once RTPI has been queried for next departure time*/
-function changeFacebookText() {
+/*Changes the Twitter Panel text once RTPI has been queried for next departure time*/
+function changeTwitterText() {
     "use strict";
-    $("#facebook").html("<p style='font-size:small'>" + FacebookTime + ": " + FacebookTweet + "<br></p><p style='font-size:xx-small'> Last updated on " + Facebooklastchecked + ". <a href='#' id='update'>Update?</a></p>"); //This text appears in the Facebook Panel
+    $("#twitter").html(TwitterText); //This text appears in the Twitter Panel
 }
 
 /*Fetch RTPI Data*/
 function queryRTPI() {
     "use strict";
-    RTPIURL = "http://www.oxontime.com/Naptan.aspx?t=departure&sa=" + RTPIStopIDarray[MyStopID] + "&dc=&ac=96&vc=TUBE&x=" + RTPIStopXarray[MyStopID] + "&y=" + RTPIStopYarray[MyStopID] + "&format=xhtml"; //This is the URL we call for the data
+    RTPIURL = "http://www.oxontime.com/Naptan.aspx?t=departure&sa=" + RTPIArray[MyStopID][0] + "&dc=&ac=96&vc=TUBE&x=" + RTPIArray[MyStopID][1] + "&y=" + RTPIArray[MyStopID][2] + "&format=xhtml"; //This is the URL we call for the data
     RTPIRequest = new XMLHttpRequest({mozSystem: true});
     RTPIRequest.open("GET", RTPIURL, true);
     RTPIRequest.onreadystatechange = function () {
@@ -150,49 +139,68 @@ function queryRTPI() {
             //alert(RTPIRequest.readyState + ":" + RTPIRequest.status + ":" + RTPIRequest.statusText);
         } else if (RTPIRequest.readyState === 4 && RTPIRequest.status === 200) { //This shows the request has come back
             textresponse = RTPIRequest.responseText; //Take the response as a text string
-            placefinder = textresponse.search('<td class="sortable-text hidden">'); //Find some text a bit before the time of the next bus
-            ETD = textresponse.substring((placefinder + 33), (placefinder + 38)); //Move forward to where time of next bus is
-            ETDHours = ETD.substring(0, 2); //extract the hour
-            ETDMinutes = ETD.substring(3, 5); //extract the minutes
-            RTPIlastchecked = new Date(); //get the time of "now"
-            ETDYear = RTPIlastchecked.getFullYear(); //get now's Year
-            ETDMonth = RTPIlastchecked.getMonth(); //get now's Month
-            ETDDay = RTPIlastchecked.getDate(); //get now's Day
-            ETDSeconds = RTPIlastchecked.getSeconds(); //get now's Second
-            ETDMilliseconds = RTPIlastchecked.getMilliseconds(); //get now's Milisecond
-            ETDFull = new Date(ETDYear, ETDMonth, ETDDay, ETDHours, ETDMinutes, ETDSeconds, ETDMilliseconds); //use this information from now to fill in blanks and turn RTPI time text string into a proper time. Weakness: when asking a question across midnight, new month, new year. Need to solve.
-            minutestogo = ((ETDFull - RTPIlastchecked) / 60000); //substract now from ETD to obtain how long to wait
+            if (textresponse.indexOf('<td class="sortable-text hidden">') < 0) {
+                ResultText = "<p style='font-size:small'>Unfortunately there are currently no departures from " + departurearray[MyStopID] + " to " + destintext + "</p>";
+            } else {
+                placefinder = textresponse.search('<td class="sortable-text hidden">'); //Find some text a bit before the time of the next bus
+                placefinder2 = textresponse.substring((placefinder + 33), (placefinder + 42)); //Move to just before where time of next bus is
+                placefinder3 = placefinder2.search(/\d\d:\d\d/); //Find time text
+                ETD = placefinder2.substring((placefinder3), (placefinder3 + 5)); //discard test of text
+                RTPIlastchecked = new Date(); //get the time of "now"
+                ETDFull = new Date(RTPIlastchecked.getFullYear(), RTPIlastchecked.getMonth(), RTPIlastchecked.getDate(), ETD.substring(0, 2), ETD.substring(3, 5), RTPIlastchecked.getSeconds(), RTPIlastchecked.getMilliseconds());
+                minutestogo = ((ETDFull - RTPIlastchecked) / 60000); //substract 'now' from ETD to obtain how long to wait
+                if (minutestogo > 60) {
+                    timetogo = " in " + (Math.floor(minutestogo / 60)) + " hours " + (minutestogo - (Math.floor(minutestogo / 60) * 60)) + " minutes ";
+                } else if (minutestogo === 60) {
+                    timetogo = " in 1 hour ";
+                } else if (minutestogo < 1) {
+                    timetogo = " now ";
+                } else {
+                    timetogo = " in " + minutestogo + " minutes ";
+                }
+                ResultText = "<p style='font-size:small'>The next bus to " + destintext + " leaves " + departurearray[MyStopID] + timetogo + " (at " + ETD + "). <br><br> Journey time takes around " + Journeytimearray[MyStopID] + " minutes. <br><br></p><p style='font-size:xx-small'> Last updated on " + RTPIlastchecked + ". <a href='#' id='update'>Update?</a></p>";
+            }
             changeResultText(); //use all this information to change the Result Panel
         }
     };
     RTPIRequest.send();
 }
 
-/*Fetch Facebook*/
-function queryFacebook() {
+/*Fetch Twitter Data*/
+    //could also load from http://www.oxfordtube.com/serviceinfo.aspx or facebook
+function queryTwitter() {
     "use strict";
-    FacebookURL = "https://graph.facebook.com/Oxford-Tube"; //This is the URL we call for the data
-    FacebookRequest = new XMLHttpRequest({mozSystem: true}); //need the bit in curly brackets to make cross-domain request work, maybe only in the simulator?
-    FacebookRequest.open("Get", FacebookURL, true);
-    FacebookRequest.onreadystatechange = function () {
-        if (FacebookRequest.readyState !== 4 || FacebookRequest.status !== 200) {
-            FacebookTime = "no";
-            FacebookTweet = "no";
-            Facebooklastchecked = new Date(); //get the time of "now"
-            //alert(FacebookRequest.readyState + ":" + FacebookRequest.status + ":" + xmlhttp.statusText);
-        } else if (FacebookRequest.readyState === 4 && FacebookRequest.status === 200) { //This shows the request has come back
-            FacebookResponse = FacebookRequest.responseText; //Take the response as a text string
-            FacebookTime = FacebookResponse.created_at;
-            FacebookTweet = FacebookResponse.text;
-            Facebooklastchecked = new Date(); //get the time of "now"
-            changeFacebookText(); //use all this information to change the Facebook Panel
+    TwitterRequest = new XMLHttpRequest({mozSystem: true}); //need the bit in curly brackets to make cross-domain request work, maybe only in the simulator?    
+    TwitterRequest.open("Get", TwitterURL, true);
+    TwitterRequest.onreadystatechange = function () {
+        if (TwitterRequest.readyState !== 4 || TwitterRequest.status !== 200) {
+            TwitterTime = "Twitter";
+            TwitterTweet = "Unavailable";
+        } else if (TwitterRequest.readyState === 4 && TwitterRequest.status === 200) { //This shows the request has come back
+            TwitterResponse = JSON.parse(TwitterRequest.response);
+            //TwitterTime = TwitterResponse[0].created_at.substring(0, 19);
+            //TwitterTweet = TwitterResponse[0].text;
+            //Twitterlastchecked = new Date(); //get the time of "now". leaving in in case want to put back.
+            //basically here want to parse all the twittertweets for words like "delay" or 'service update" and then print the tweet if so.
+            for (j = 0; j < TwitterResponse.length; j++) {
+                TwitterItem = TwitterResponse[j].text;
+                if (TwitterItem.indexOf("Easter") > 0) {
+                    TwitterTime = TwitterResponse[j].created_at.substring(0, 19);
+                    TwitterTweet = TwitterResponse[j].text;
+                    TwitterText = TwitterText.concat("<p style='font-size:small'>" + TwitterTime + ": " + TwitterTweet + "<br></p><p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
+                    //TwitterTime.push(TwitterResponse[j].created_at.substring(0, 19));
+                    //TwitterTweet.push(TwitterResponse[j].text);
+                }
+            }
+            //for (k = 0; k < TwitterTweet.length; k++) {
+            //    TwitterText = TwitterText.concat("<p style='font-size:small'>" + TwitterTime[k] + ": " + TwitterTweet[k] + "<br></p><p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
+            //}
+            changeTwitterText(); //use all this information to change the Twitter Panel. also make queryTwitter run on opening the app
         }
     };
-    FacebookRequest.send();
+    TwitterRequest.send();
+
 }
-
-
-//could also load from http://www.oxfordtube.com/serviceinfo.aspx
 
 /*rules*/
                      
@@ -201,12 +209,10 @@ $("#destination-button").click(function () {
     "use strict";
 /*..."destintext" i.e. the variable for destination button label*/
     changeDestinTextVar();
-/*...the top right hand side destination button label*/
-    destinationButtonText();
+/*...the top right hand side destination button label and the instruction text*/
+    changeDestinationButtonAndText();
 /*...the horizontal departure stop selection menu labels*/
     departureSelector();
-/*...the instruction text*/
-    instructionText();
 /*..."nextdestin" so that it will work next time*/
     changeDestinVar();
 });
@@ -266,18 +272,18 @@ $(departurebuttons[9]).click(function () {
 $("#departure-selector-A").click(function () {
     "use strict";
     queryRTPI();
-    queryFacebook();
+    queryTwitter();
 });
 
 $("#departure-selector-B").click(function () {
     "use strict";
     queryRTPI();
-    queryFacebook();
+    queryTwitter();
 });
 
 /*This is supposed to update the page if the update text is clicked... but currently not.*/
 $("#update").click(function () {
     "use strict";
     queryRTPI();
-    queryFacebook();
+    queryTwitter();
 });
