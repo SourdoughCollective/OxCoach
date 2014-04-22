@@ -48,17 +48,17 @@ var placefinder2; // this variable helps locate the time of the next bus in the 
 var placefinder3; // this variable helps locate the time of the next bus in the RTPI textresponse
 
 var i; //helps with looping
-var j; //helps with looping
-var k; //helps with looping
 var MyStopID; //used to select the right value from the arrays. Changes when a departure button is pressed.
 
 /*Twitter*/
 var TwitterRequest; //function that makes the Twitter call
 var TwitterURL = "https://fierce-earth-8634.herokuapp.com/1.1/statuses/user_timeline.json?screen_name=Oxford_Tube&trim_user=t";
 var TwitterResponse; //what comes back from the Twitter call
-var TwitterTime; //parse Twitter call for time
+var TwitterTime; //parse Twitter call for Tweet time
 var TwitterTweet; //parse Twitter call for tweet
-var TwitterItem;
+var TwitterNow; //Time of Twitter call in suitable format
+var TwitterThresholdCheck; //Time of Tweet in suitable format
+var TwitterHoursBack = 24; //number of hours to look back at tweets
 
 /*Panel Text*/
 var ResultText; //This goes into the Result Panel
@@ -122,12 +122,6 @@ function changeResultText() {
     $("#result").html(ResultText); //This text appears in the Result Panel
 }
 
-/*Changes the Twitter Panel text once RTPI has been queried for next departure time*/
-function changeTwitterText() {
-    "use strict";
-    $("#twitter").html(TwitterText); //This text appears in the Twitter Panel
-}
-
 /*Fetch RTPI Data*/
 function queryRTPI() {
     "use strict";
@@ -178,24 +172,18 @@ function queryTwitter() {
             TwitterTweet = "Unavailable";
         } else if (TwitterRequest.readyState === 4 && TwitterRequest.status === 200) { //This shows the request has come back
             TwitterResponse = JSON.parse(TwitterRequest.response);
-            //TwitterTime = TwitterResponse[0].created_at.substring(0, 19);
-            //TwitterTweet = TwitterResponse[0].text;
-            //Twitterlastchecked = new Date(); //get the time of "now". leaving in in case want to put back.
-            //basically here want to parse all the twittertweets for words like "delay" or 'service update" and then print the tweet if so.
-            for (j = 0; j < TwitterResponse.length; j++) {
-                TwitterItem = TwitterResponse[j].text;
-                if (TwitterItem.indexOf("Easter") > 0) {
-                    TwitterTime = TwitterResponse[j].created_at.substring(0, 19);
-                    TwitterTweet = TwitterResponse[j].text;
-                    TwitterText = TwitterText.concat("<p style='font-size:small'>" + TwitterTime + ": " + TwitterTweet + "<br></p><p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
-                    //TwitterTime.push(TwitterResponse[j].created_at.substring(0, 19));
-                    //TwitterTweet.push(TwitterResponse[j].text);
+            $("#twitter").empty();
+            $("#twitter").append("Important Service Announcements<br>(<a href='http://www.twitter.com/Oxford_Tube' id='update'>Tweets</a> in the last " + TwitterHoursBack + " hours)");
+            $(TwitterResponse).each(function () {
+                TwitterThresholdCheck = new Date(this.created_at);
+                TwitterNow = new Date();
+                if ((TwitterThresholdCheck > (TwitterNow.setHours(TwitterNow.getHours() - TwitterHoursBack))) && ((this.text.indexOf("service") > 0) || (this.text.indexOf("normal") > 0))) {
+                    TwitterTime = this.created_at.substring(0, 19);
+                    TwitterTweet = this.text;
+                    $("#twitter").append("<p style='font-size:small'>" + TwitterTime + ": " + TwitterTweet + "<br></p>");
                 }
-            }
-            //for (k = 0; k < TwitterTweet.length; k++) {
-            //    TwitterText = TwitterText.concat("<p style='font-size:small'>" + TwitterTime[k] + ": " + TwitterTweet[k] + "<br></p><p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
-            //}
-            changeTwitterText(); //use all this information to change the Twitter Panel. also make queryTwitter run on opening the app
+            });
+            $("#twitter").append("<p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
         }
     };
     TwitterRequest.send();
