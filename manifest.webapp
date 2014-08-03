@@ -1,9 +1,9 @@
 {
-  "name": "Oxford Tube App",
+  "name": "Ox Coach",
   
   "description": "Access live Oxford Tube times",  
   
-  "version": "0.2",
+  "version": "0.6",
   
   "launch_path": "/index.html",
   
@@ -19,7 +19,7 @@
   
   "locales": {
     "en": {
-      "name": "OxTube"
+      "name": "Ox Coach"
     }
   },
   
