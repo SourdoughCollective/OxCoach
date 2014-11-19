@@ -1,27 +1,30 @@
 /*global $*/
-/*version 0.6*/
+/*version 0.8*/
 
 /****VARIABLES****/
 /*DIRECTION, DEPARTURE STOP, COACH SERVICE: THREE NUMERICAL CODES ON WHICH LABELS AND PROCESSES ARE BASED*/
 var DirectionCode; /*DIRECTION: most important -- all destination-based changes are based on this number. "1" means the journey query being constructed will be from London to Oxford. "0" means the opposite.*/
 var MyStopID; /*DEPARTURE: used to select the right value from the arrays. Changes when a departure button is pressed*/
-var ServiceCode = 2; /*SERVICE: indicates the service desired. 0 = OT, 1 = X90, 2 = both (default) */
+var TimesServiceCode = 2; /*JOURNEY-SERVICE: indicates the service desired. 0 = OT, 1 = X90, 2 = both (default) */
+var UpdatesServiceCode = 2; /*UPDATES-SERVICE: indicates the service desired for updates. 0 = OT, 1 = X90, 2 = both (default) */
+var UpdatesHoursBackCode = 1; /*UPDATES-HOURS: indicates hours-back desired for updates. 0 = 12, 1 = 24, 2 = 48 */
 var OTX90; //"0" (Oxford Tube) or "1" (X90). This variable is almost a duplicate of Service Code.
 
 /*COMMON-NAME VARIABLES FOR DIRECTION, DEPARTURE STOP, COACH SERVICE (USED IN "DETAILS", "CHOICE", AND "SETTINGS" PANELS)*/
-var destintextarray = ["London", "Oxford"]; /*DESTINATION (DETAILS, CHOICE): constants: containing the two possible destinations*/
-var ToLoDepart = [ "Gloucester Green", "Speedwell", "High Street", "St Clement's", "Oxford Brookes", "Headington", "Green Road Roundabout", "Thornhill P&R", "Lewknor Turn"]; //DEPARTURE (DETAILS, CHOICE): array of names of stops to London
-var ToOxDepart = [ "Victoria", "Grosvenor Gardens", "Marble Arch", "Marylebone", "Notting Hill Gate", "Shepherd's Bush", "Hillingdon", "Lewknor Turn", " - "]; //DEPARTURE (DETAILS, CHOICE): array of names of stops to Oxford
+var destintextarray = [ "London", "Oxford" ]; /*DESTINATION (DETAILS, CHOICE): constants: containing the two possible destinations*/
+var ToLoDepart = [ "Gloucester Green", "Speedwell", "High Street", "St Clement's", "Oxford Brookes", "Headington", "Green Road Roundabout", "Thornhill P&R", "Lewknor Turn" ]; //DEPARTURE (DETAILS, CHOICE): array of names of stops to London
+var ToOxDepart = [ "Victoria", "Grosvenor Gardens", "Marble Arch", "Marylebone", "Notting Hill Gate", "Shepherd's Bush", "Hillingdon", "Lewknor Turn", " - " ]; //DEPARTURE (DETAILS, CHOICE): array of names of stops to Oxford
 var departurearray = [ToLoDepart, ToOxDepart]; //DEPARTURE: used to select one of prior two arrays depending on direction
 var servicearray = [ "Oxford Tube", "X90", "Oxford Tube and X90" ]; //SERVICE (DETAILS, CHOICE, SETTINGS, RESULT): array of services
-var twitterhoursbackarray = [ 12, 24, 48 ];
+var updateshoursbackarray = [ "12 hours", "24 hours", "48 hours" ];
 
 /*HTML-ID-NAME VARIABLES FOR DIRECTION, DEPARTURE STOP, COACH SERVICE (USED IN "CHOICE", "SETTINGS", AND "RESULT" PANELS)*/
 var departureselectors = [ "#departureselector0", "#departureselector1", "#departureselector2", "#departureselector3", "#departureselector4", "#departureselector5", "#departureselector6", "#departureselector7", "#departureselector8" ]; //DEPARTURE (CHOICE): array containing the HTML ids for Choice Panel list of departure stops
-var coachservicesettingsarray = [ "#settings-oxford-tube", "#settings-X90", "#settings-both" ]; //SERVICE (SETTINGS): array containing HTML ids for Settings Panel list of coach service
-var coachservicechoicearray = [ "#choose-oxford-tube", "#choose-X90", "#choose-both" ]; //SERVICE (CHOICE): array containing HTML ids for Choice Panel list of coach service
-var twitterhoursbacksettingsarray = [ "#settings-12-hours", "#settings-24-hours", "#settings-48-hours" ]; //SERVICE (SETTINGS): array containing HTML ids for Settings Panel list of twitter hours back setting
-var ResultPanelArray = [ "#resultOT", "#resultX90" ]; //(RESULT): array used to find correct place in result panel to give each result
+var coachservicechoicearray = [ "#choose-oxford-tube", "#choose-X90", "#choose-both" ]; //JOURNEY-SERVICE (CHOICE): array containing HTML ids for Choice Panel list of coach service (for journey)
+var updatescoachservicechoicearray = [ "#choose-updates-oxford-tube", "#choose-updates-X90", "#choose-updates-both" ]; //UPDATES-SERVICE (CHOICE): array containing HTML ids for Choice Panel list of coach service (for updates)
+var updateshoursbackchoicearray = [ "#choose-12-hours", "#choose-24-hours", "#choose-48-hours" ]; //UPDATES-HOURS-BACK (CHOICE): array containing HTML ids for Settings Panel list of updates hours back setting
+var JourneyResultPanelArray = [ "#resultOT", "#resultX90" ]; //JOURNEY (RESULT): array used to identify desired journey results panels
+var UpdatesResultPanelArray = [ "#updatesOT", "#updatesX90" ]; //UDATES (RESULT): array used to identify desired updates results panels
 
 /*RTPI INFORMATION variables*//* For Oxford Tube (OT) and then for X90: in each case, two arrays containing RTPI's (1) ID numbers, (2) X coordinate, and (3) Y coordinate for each stop, plus a third array used to select one of these two depending on direction*/
 var RTPIOTToLo = [ [ "69326524", "451004", "206385" ], [ "69345627", "451308", "205789" ], [ "69345692", "451811", "206270" ], [ "69323265", "452503", "206025" ], [ "69347427", "453606", "206654" ], [ "69347625", "454635", "207168" ], [ "69325687", "455361", "207405" ], [ "69326542", "456602", "207326" ], [ "69345498", "472100", "197680"] ];
@@ -54,8 +57,7 @@ var TwitterTime = [];
 var TwitterTweet = [];
 var TwitterNow = [];
 var TwitterThresholdCheck = [];
-var TwitterHoursBack = 24; //How many hours back in time should the search for relevant twitter posts look
-var TwitterResultPanel = [ "#twitterOT", "#twitterX90" ];
+var TwitterHoursBack = [12, 24, 48]; //How many hours back in time should the search for relevant twitter posts look
 var TwitterSearchTerms = [ [ [ "service", "normal", "delay" ], [ " " ] ], [ [ "service", "normal", "delay" ], [ "X90" ] ] ]; // array of arrays: first level separates OT (0) from X90 (1), second separates OR (0) from AND (1), third array contains the various words one might want.
 
 /*PANEL TEXT*/
@@ -73,6 +75,8 @@ var mmtime = [];
 var mmhhtime = [];
 var fulltime = [];
 var ETDFull = []; //estimated time of departure -- turned from ETD into full time string
+
+var uielements = [ ".ui-panel-journeydetails", ".ui-panel-updatesdetails", ".ui-panel-page-container-c", ".ui-panel-destination-instructions", ".ui-panel-departure-instructions", ".ui-coach-service-instructions", ".ui-updates-coach-service-instructions", ".ui-updates-HoursBack-instructions", ".ui-panel-twitter", ".ui-links", ".ui-panel-menu" ];
 
 /****FUNCTIONS****/
 /**RTPI**/
@@ -113,8 +117,8 @@ function queryRTPI(OTX90) {
                 ResultText[OTX90] = "<p style='font-size:small'>The next " + servicearray[OTX90] + " to " + destintextarray[DirectionCode] + " leaves " + departurearray[DirectionCode][MyStopID] + timetogo[OTX90] + " (at " + ETD[OTX90] + "). <br><br> Journey time takes around " + Journeytimearray[DirectionCode][MyStopID] + " minutes.</p>";
                 LastCheckedText = "<p style='font-size:xx-small'> Last updated on " + RTPIlastchecked[OTX90] + ".</p>";
             }
-            $(ResultPanelArray[OTX90]).html(ResultText[OTX90]); //use all this information to change the Result Panel
-            $("#last-checked-dynatext").html(LastCheckedText); //last checked info goes in the details box
+            $(JourneyResultPanelArray[OTX90]).html(ResultText[OTX90]); //use all this information to change the Result Panel
+            $("#last-checked-dynatext").html(LastCheckedText); //last checked info goes in the journeydetails box
         }
     };
     RTPIRequest[OTX90].send();
@@ -132,35 +136,33 @@ function queryTwitter(OTX90) {
             TwitterTweet[OTX90] = "Unavailable";
         } else if (TwitterRequest[OTX90].readyState === 4 && TwitterRequest[OTX90].status === 200) { //This shows the request has come back
             TwitterResponse[OTX90] = JSON.parse(TwitterRequest[OTX90].response);
-            $(TwitterResultPanel[OTX90]).empty();
-            $(TwitterResultPanel[OTX90]).append(servicearray[OTX90] + " Service Announcements<br>(<a href='" + TwitterURL[OTX90] + "' id='update'>Tweets</a> in the last " + TwitterHoursBack + " hours)");
+            $(UpdatesResultPanelArray[OTX90]).empty();
+            $(UpdatesResultPanelArray[OTX90]).append(servicearray[OTX90]);
             $(TwitterResponse[OTX90]).each(function () {
                 TwitterThresholdCheck[OTX90] = new Date(this.created_at);
                 TwitterNow[OTX90] = new Date();
-                if ((TwitterThresholdCheck[OTX90] > (TwitterNow[OTX90].setHours(TwitterNow[OTX90].getHours() - TwitterHoursBack))) && ((this.text.indexOf(TwitterSearchTerms[OTX90][0][0]) > 0) || (this.text.indexOf(TwitterSearchTerms[OTX90][0][1]) > 0) || (this.text.indexOf(TwitterSearchTerms[OTX90][0][2]) > 0)) && (this.text.indexOf(TwitterSearchTerms[OTX90][1][0]) > 0)) {
+                if ((TwitterThresholdCheck[OTX90] > (TwitterNow[OTX90].setHours(TwitterNow[OTX90].getHours() - TwitterHoursBack[UpdatesHoursBackCode]))) && ((this.text.indexOf(TwitterSearchTerms[OTX90][0][0]) > 0) || (this.text.indexOf(TwitterSearchTerms[OTX90][0][1]) > 0) || (this.text.indexOf(TwitterSearchTerms[OTX90][0][2]) > 0)) && (this.text.indexOf(TwitterSearchTerms[OTX90][1][0]) > 0)) {
                     TwitterTime[OTX90] = this.created_at.substring(0, 19);
                     TwitterTweet[OTX90] = this.text;
-                    $(TwitterResultPanel[OTX90]).append("<p style='font-size:small'>" + TwitterTime[OTX90] + ": " + TwitterTweet[OTX90] + "<br></p>");
+                    $(UpdatesResultPanelArray[OTX90]).append("<p style='font-size:small'>" + TwitterTime[OTX90] + ": " + TwitterTweet[OTX90] + "<br></p>");
                 }
             });
-            $(TwitterResultPanel[OTX90]).append("<p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
+            $(UpdatesResultPanelArray[OTX90]).append("<p style='font-size:xx-small'><a href='#' id='update'>Update?</a></p><br>");
         }
     };
     TwitterRequest[OTX90].send();
 }
 
 /**SHOW AND HIDE**/
-function showPanels(Panel1, Panel2, Panel3) { /*Hide all panels then show selected ones*/
+function showPanels(PanelsToShow) { /*Hide all panels then show selected ones*/
     "use strict";
-    $(".ui-panel-page-container-a").hide();
-    $(Panel1).show();
-    $(Panel2).show();
-    $(Panel3).show();
-}
-
-function showDestinationInstructions() { //shows details and destination instructions
-    "use strict";
-    showPanels("#details", "#destination-instructions");
+    var i;
+    for (i = 0; i < uielements.length; i++) {
+        $(uielements[i]).css('display', 'none');
+    }
+    for (i = 0; i < PanelsToShow.length; i++) {
+        $(PanelsToShow[i]).css('display', 'block');
+    }
 }
  
 function showDepartureInstructions() { //shows details and departure instructions
@@ -175,30 +177,28 @@ function showDepartureInstructions() { //shows details and departure instruction
             $(departureselectors[i]).hide(); //hides any empty list items
         }
     }
-    showPanels("#details", "#departure-instructions");
+    showPanels([ ".ui-panel-journeydetails", ".ui-panel-departure-instructions" ]);
 }
 
-function showByService(omnipanel, OTpanel, X90panel) { //shows details and results panels (depending on coach service selected)
+function showByService(ServiceToShow, DetailsPanel, PanelArray) { //shows details and results panels (depending on coach service selected)
     "use strict";
-    if (ServiceCode === 0) {
-        showPanels(omnipanel, OTpanel);
-    }
-    if (ServiceCode === 1) {
-        showPanels(omnipanel, X90panel);
-    }
-    if (ServiceCode === 2) {
-        showPanels(omnipanel, OTpanel, X90panel);
+    if (ServiceToShow === 2) {
+        $(PanelArray[1]).css('top', "50%"); //this doesn't really work and there really has to be a better way to get the two panels to follow each other nicely.
+        showPanels([ DetailsPanel, PanelArray[0], PanelArray[1] ]);
+    } else {
+        $(PanelArray[1]).css('top', "20%");
+        showPanels([ DetailsPanel, PanelArray[ServiceToShow] ]);
     }
 }
 
 function showInstructionsOrResults() { //show relevant instructions if details missing; if none missing, show results
     "use strict";
     if (DirectionCode === undefined) {
-        showDestinationInstructions();
+        showPanels([ ".ui-panel-journeydetails", ".ui-panel-destination-instructions" ]);
     } else if (MyStopID === undefined) {
         showDepartureInstructions();
     } else {
-        showByService("#details", ResultPanelArray[0], ResultPanelArray[1]);
+        showByService(TimesServiceCode, ".ui-panel-journeydetails", JourneyResultPanelArray);
     }
 }
 
@@ -215,55 +215,79 @@ function destinationToggle() { //Toggles variable "DirectionCode"
 /**QUERY FUNCTION**/
 function queryByService(whatquery) { //passes the query on for the selected coach services
     "use strict";
-    if (ServiceCode === 0 || ServiceCode === 2) {
+    if (TimesServiceCode !== 1) {
         whatquery(0);
     }
-    if (ServiceCode === 1 || ServiceCode === 2) {
+    if (TimesServiceCode !== 0) {
         whatquery(1);
     }
 }
 
 /**FILL-DYNATEXT FUNCTIONS**/
-function fillDynatext(dynatextID, label) {
+function fillDynatext(dynatextIDandlabel) { //Takes arrays (dynatextIDandlabel) of the format [dynatextID, label]. Replaces a piece of text (html id: dynatextID) with a new label (label).
     "use strict";
-    $(dynatextID).html(label);
+    var j;
+    for (j = 0; j < dynatextIDandlabel.length; j++) {
+        $(dynatextIDandlabel[j][0]).html(dynatextIDandlabel[j][1]);
+    }
 }
 
 function shoot() {
     "use strict";
     queryByService(queryRTPI);
-    showByService("#details", ResultPanelArray[0], ResultPanelArray[1]);
-}
-
-function changeMyStopID(NewStopID) { /*changes the MyStopID variable*/
-    "use strict";
-    MyStopID = NewStopID;
+    showByService(TimesServiceCode, ".ui-panel-journeydetails", JourneyResultPanelArray);
 }
 
 function changeMyStopIDandshoot(NewStopID) {
     "use strict";
-    changeMyStopID(NewStopID);
-    fillDynatext("#departure-dynatext", departurearray[DirectionCode][MyStopID]); //should this be in changeMyStopID?
+    MyStopID = NewStopID;
+    fillDynatext([ [ "#departure-dynatext", departurearray[DirectionCode][MyStopID] ] ]);
     shoot();
 }
 
-function indicateChoice(arraytobechanged, arrayofnames, chosenitem) {
+function indicateChoice(ChoiceMatrix) { //Takes arrays (Choice Matrix) of the format [ListToChange, arrayofnames, chosenitem]. It changes the list of options (real names: arrayofnames. html ids: ListToChange) to indicate the item chosen (chosenitem).
     "use strict";
-    var i;
-    for (i = 0; i < arraytobechanged.length; i++) {
-        $(arraytobechanged[i]).html(arrayofnames[i] + "  ( )");
+    var j;
+    for (j = 0; j < ChoiceMatrix.length; j++) {
+        var i;
+        for (i = 0; i < ChoiceMatrix[j][0].length; i++) {
+            if (i !== ChoiceMatrix[j][2]) {
+                $(ChoiceMatrix[j][0][i]).html(ChoiceMatrix[j][1][i] + "  ( )");
+            } else {
+                $(ChoiceMatrix[j][0][ChoiceMatrix[j][2]]).html(ChoiceMatrix[j][1][ChoiceMatrix[j][2]] + "  (/)");
+            }
+        }
     }
-    $(arraytobechanged[chosenitem]).html(arrayofnames[chosenitem] + "  (/)");
+}
+
+function timesProcedure(DynatextToChange, ArrayContainingNames, CodeToSelectName) {
+    "use strict";
+    fillDynatext([ [ DynatextToChange, ArrayContainingNames[CodeToSelectName] ] ]);
+    showInstructionsOrResults();
+}
+
+function updatesProcedure() {
+    "use strict";
+    fillDynatext([ [ "#updates-coach-service-dynatext", servicearray[UpdatesServiceCode] ], [ "#updates-HoursBack-dynatext", updateshoursbackarray[UpdatesHoursBackCode] ] ]);
+    indicateChoice([ [updatescoachservicechoicearray, servicearray, UpdatesServiceCode], [updateshoursbackchoicearray, updateshoursbackarray, UpdatesHoursBackCode] ]);
+    queryByService(queryTwitter);
+    showByService(UpdatesServiceCode, ".ui-panel-updatesdetails", UpdatesResultPanelArray);
+}
+
+function formatSettingsVsChoices(PanelsToChange) { //because the same choice boxes are used for settings panel and for choice panels, need to change their screen height. This does that. PanelsToChange is an array.
+    "use strict";
+    $(PanelsToChange[0]).css('top', "10%");
+    $(PanelsToChange[1]).css('top', "40%");
+    $(PanelsToChange[2]).css('top', "70%");
 }
 
 /****RULES****/
 /*1 -- Clicking the Destination Button changes the destination and returns departure to undefined... */
 $("#destination-dynatext").click(function () {
     "use strict";
-    destinationToggle();
-    fillDynatext("#destination-dynatext", destintextarray[DirectionCode]);
+    DirectionCode = undefined;
     MyStopID = undefined;
-    fillDynatext("#departure-dynatext", "Departure");
+    fillDynatext([ [ "#destination-dynatext", "Destination"], [ "#departure-dynatext", "Departure" ] ]);
     showInstructionsOrResults();
 });
 
@@ -271,15 +295,32 @@ $("#destination-dynatext").click(function () {
 $("#departure-dynatext").click(function () {
     "use strict";
     MyStopID = undefined;
-    fillDynatext("#departure-dynatext", "Departure");
+    fillDynatext([ [ "#departure-dynatext", "Departure" ] ]);
     showInstructionsOrResults();
 });
 
 /*3 -- Clicking the Coach Service Button shows coach service selection instructions... */
 $("#coach-service-dynatext").click(function () {
     "use strict";
-    indicateChoice(coachservicesettingsarray, servicearray, ServiceCode);
-    showPanels("#details", "#coach-service-instructions");
+    indicateChoice([[coachservicechoicearray, servicearray, TimesServiceCode]]);
+    $(".ui-coach-service-instructions").css('top', "20%");
+    showPanels([ ".ui-panel-journeydetails", ".ui-coach-service-instructions" ]);
+});
+
+/*3 -- In Updates Panel, clicking the Coach Service Button shows updates coach service selection instructions... */
+$("#updates-coach-service-dynatext").click(function () {
+    "use strict";
+    indicateChoice([[updatescoachservicechoicearray, servicearray, UpdatesServiceCode]]);
+    $(".ui-updates-coach-service-instructions").css('top', "20%");
+    showPanels([ ".ui-panel-updatesdetails", ".ui-updates-coach-service-instructions" ]);
+});
+
+/*3 -- In Updates Panel, clicking the UpdatesHoursBack Button shows UpdatesHoursBack selection instructions... */
+$("#updates-HoursBack-dynatext").click(function () {
+    "use strict";
+    indicateChoice([[updateshoursbackchoicearray, updateshoursbackarray, UpdatesHoursBackCode]]);
+    $(".ui-updates-HoursBack-instructions").css('top', "20%");
+    showPanels([ ".ui-panel-updatesdetails", ".ui-updates-HoursBack-instructions" ]);
 });
 
 /*4 -- Clicking a Departure Selector tab starts changeMyStopID AND shoots a resuest off*/
@@ -332,78 +373,67 @@ $(departureselectors[8]).click(function () {
 $("#choose-oxford").click(function () {
     "use strict";
     DirectionCode = 1;
-    fillDynatext("#destination-dynatext", destintextarray[DirectionCode]);
-    showInstructionsOrResults();
+    timesProcedure("#destination-dynatext", destintextarray, DirectionCode);
 });
 
 $("#choose-london").click(function () {
     "use strict";
     DirectionCode = 0;
-    fillDynatext("#destination-dynatext", destintextarray[DirectionCode]);
-    showInstructionsOrResults();
+    timesProcedure("#destination-dynatext", destintextarray, DirectionCode);
 });
 
 $("#choose-oxford-tube").click(function () {
     "use strict";
-    ServiceCode = 0;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
-    showInstructionsOrResults();
+    TimesServiceCode = 0;
+    timesProcedure("#coach-service-dynatext", servicearray, TimesServiceCode);
 });
 
 $("#choose-X90").click(function () {
     "use strict";
-    ServiceCode = 1;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
-    showInstructionsOrResults();
+    TimesServiceCode = 1;
+    timesProcedure("#coach-service-dynatext", servicearray, TimesServiceCode);
 });
 
 $("#choose-both").click(function () {
     "use strict";
-    ServiceCode = 2;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
-    showInstructionsOrResults();
+    TimesServiceCode = 2;
+    timesProcedure("#coach-service-dynatext", servicearray, TimesServiceCode);
 });
 
-$("#settings-oxford-tube").click(function () {
+$("#choose-updates-oxford-tube").click(function () {
     "use strict";
-    ServiceCode = 0;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
-    indicateChoice(coachservicesettingsarray, servicearray, 0);
-    indicateChoice(coachservicechoicearray, servicearray, 0);
+    UpdatesServiceCode = 0;
+    updatesProcedure();
 });
 
-$("#settings-X90").click(function () {
+$("#choose-updates-X90").click(function () {
     "use strict";
-    ServiceCode = 1;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
-    indicateChoice(coachservicesettingsarray, servicearray, 1);
-    indicateChoice(coachservicechoicearray, servicearray, 1);
+    UpdatesServiceCode = 1;
+    updatesProcedure();
 });
 
-$("#settings-both").click(function () {
+$("#choose-updates-both").click(function () {
     "use strict";
-    ServiceCode = 2;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
-    indicateChoice(coachservicesettingsarray, servicearray, 2);
-    indicateChoice(coachservicechoicearray, servicearray, 2);
+    UpdatesServiceCode = 2;
+    updatesProcedure();
 });
 
-$("#settings-12-hours").click(function () {
+$("#choose-12-hours").click(function () {
     "use strict";
-    TwitterHoursBack = 12;
-    indicateChoice(twitterhoursbacksettingsarray, twitterhoursbackarray, 0);
+    UpdatesHoursBackCode = 0;
+    updatesProcedure();
 });
 
-$("#settings-24-hours").click(function () {
+$("#choose-24-hours").click(function () {
     "use strict";
-    TwitterHoursBack = 24;
-    indicateChoice(twitterhoursbacksettingsarray, twitterhoursbackarray, 1);
+    UpdatesHoursBackCode = 1;
+    updatesProcedure();
 });
 
-$("#settings-48-hours").click(function () {
+$("#choose-48-hours").click(function () {
     "use strict";
-    TwitterHoursBack = 48;
-    indicateChoice(twitterhoursbacksettingsarray, twitterhoursbackarray, 2);
+    UpdatesHoursBackCode = 2;
+    updatesProcedure();
 });
 
 //THE UPDATE BUTTON
@@ -415,16 +445,26 @@ $("#go").click(function () {
     showInstructionsOrResults();
 });
 
+$("#update-updates").click(function () {
+    "use strict";
+    queryByService(queryTwitter);
+    showByService(UpdatesServiceCode, ".ui-panel-updatesdetails", UpdatesResultPanelArray);
+});
+
 //THE RESET BUTTON
 $("#reset").click(function () {
     "use strict";
     DirectionCode = undefined;
-    fillDynatext("#destination-dynatext", "Destination");
     MyStopID = undefined;
-    fillDynatext("#departure-dynatext", "Departure");
-    ServiceCode = 2;
-    fillDynatext("#coach-service-dynatext", servicearray[ServiceCode]);
+    TimesServiceCode = 2;
+    fillDynatext([ [ "#destination-dynatext", "Destination" ], [ "#departure-dynatext", "Departure" ], [ "#coach-service-dynatext", servicearray[TimesServiceCode] ] ]);
     showInstructionsOrResults();
+});
+
+//Getting to the Menu
+$("#menu-panel-button").click(function () {
+    "use strict";
+    showPanels([ ".ui-panel-menu" ]);
 });
 
 /*CLICKING MENU STUFF SHOWS STUFF*/
@@ -436,17 +476,17 @@ $("#coach-times-menu-button").click(function () {
 $("#service-updates-menu-button").click(function () {
     "use strict";
     queryByService(queryTwitter);
-    showByService("#details", TwitterResultPanel[0], TwitterResultPanel[1]);
+    showByService(UpdatesServiceCode, ".ui-panel-updatesdetails", UpdatesResultPanelArray);
 });
 
 $("#links-menu-button").click(function () {
     "use strict";
-    showPanels("#links");
+    showPanels([ ".ui-links" ]);
 });
 
 $("#settings-menu-button").click(function () {
     "use strict";
-    indicateChoice(coachservicesettingsarray, servicearray, ServiceCode);
-    indicateChoice(coachservicechoicearray, servicearray, ServiceCode);
-    showPanels("#settings");
+    indicateChoice([[coachservicechoicearray, servicearray, TimesServiceCode], [updatescoachservicechoicearray, servicearray, UpdatesServiceCode], [updateshoursbackchoicearray, updateshoursbackarray, UpdatesHoursBackCode]]);
+    formatSettingsVsChoices([ ".ui-coach-service-instructions", ".ui-updates-coach-service-instructions", ".ui-updates-HoursBack-instructions" ]);
+    showPanels([ ".ui-coach-service-instructions", ".ui-updates-coach-service-instructions", ".ui-updates-HoursBack-instructions" ]);
 });

@@ -1,34 +1,35 @@
 <!DOCTYPE html>
     <html>
         <head>
-            <title>Coach</title> <!-- version 0.6 -->
+            <title>OxCoach</title> <!-- version 0.8 -->
                
-                <link rel="stylesheet" href="css/themes/OxCoach.css" />
+                <!--<link rel="stylesheet" href="css/themes/OxCoach.css" />
                 <link rel="stylesheet" href="css/jquery.mobile.icons-1.4.2.css" />
-                <link rel="stylesheet" href="css/jquery.mobile.structure-1.4.2.css" />
+                <link rel="stylesheet" href="css/jquery.mobile.structure-1.4.2.css" />-->
+                <link rel="stylesheet" href="css/style.css" />
                 <script src="jslib/jquery-1.11.0.js"></script>
                 <script src="jslib/jquery.mobile-1.4.2.js"></script>
             
         </head>
         <body>
-         
+            
             <div data-role="page" id="dashboard">
-                
-                <div data-role="header" style="border-bottom-style:none">
-                    
-                    <a href="#menu-panel" id="menu-panel-button">  Menu  </a>
-                    
+                        
+                <div data-role="header" class="ui-header">
+
                     <h1>Oxford Coach</h1>
-                    
+
                 </div><!--close header-->
             
-                <div data-role="content" id="details" style="text-align:center; font-size:x-small; display:block" class="ui-panel-page-container-a">To <a href="index.html" id="destination-dynatext">Destination</a> from <a href="index.html" id="departure-dynatext">Departure</a> (by <a href="index.html" id="coach-service-dynatext">Oxford Tube or X90</a>).<br><div id="last-checked-dynatext"><br></div><a href="index.html" id="reset">Reset Query</a> or <a href="index.html" id="go">Update Information</a></div>
+                <div data-role="content" id="journeydetails" class="ui-panel-journeydetails">To <a href="index.html" id="destination-dynatext">Destination</a> from <a href="index.html" id="departure-dynatext">Departure</a> (by <a href="index.html" id="coach-service-dynatext">Oxford Tube and X90</a>).<br><div id="last-checked-dynatext">Follow the instructions below.</div>
+                </div>
                 
-                <div data-role="content" id="welcome" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a"></div>
+                <div data-role="content" id="updatesdetails" class="ui-panel-updatesdetails">Service Updates from <a href="index.html" id="updates-coach-service-dynatext">Oxford Tube and X90</a>.<br>Relevant tweets from the last <a href="index.html" id="updates-HoursBack-dynatext">24 hours</a>. <a href="index.html" id="updates-update">Update</a>.
+                </div>
                 
-                <div data-role="content" id="destination-instructions" style="margin:15px; text-align:center; display:block" class="ui-panel-page-container-a">Choose a destination:<br><a href="index.html" id="choose-oxford">Oxford</a> or <a href="index.html" id="choose-london">London</a></div>
+                <div data-role="content" id="destination-instructions" class="ui-panel-destination-instructions">Choose a destination:<br><a href="index.html" id="choose-oxford">Oxford</a> or <a href="index.html" id="choose-london">London</a></div>
                 
-                <div data-role="content" id="departure-instructions" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a">Select a stop towards <a id='DepInsDestintext'></a>:<br><div id='departureselectorlist' style='font-size:small; font-weight:bold; text-align:left; text-indent:10%; list-style-position:inside'><ul>
+                <div data-role="content" id="departure-instructions" class="ui-panel-departure-instructions">Select a stop towards <a id='DepInsDestintext'></a>:<br><div id='departureselectorlist' class="list-a"><ul>
                     <li id='departureselector0'></li>
                     <li id='departureselector1'></li>
                     <li id='departureselector2'></li>
@@ -40,21 +41,34 @@
                     <li id='departureselector8'></li>
                     </ul></div></div>
                 
-                <div data-role="content" id="coach-service-instructions" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a">Choose a coach service:<ul style='font-size:small; font-weight:bold; text-align:left; text-indent:10%; list-style-position:inside'>
+                <div data-role="content" id="coach-service-instructions" class="ui-coach-service-instructions">Display coach times for:<ul class="list-a">
                         <li id="choose-oxford-tube">Oxford Tube  ( )</li>
                         <li id="choose-X90">X90  ( )</li>
                         <li id="choose-both">Oxford Tube and X90  (/)</li>
                         </ul></div>
                 
-                <div data-role="content" id="resultOT" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a"></div>
+                <div data-role="content" id="updates-coach-service-instructions" class="ui-updates-coach-service-instructions">Display service updates from:<ul class="list-a">
+                        <li id="choose-updates-oxford-tube">Oxford Tube  ( )</li>
+                        <li id="choose-updates-X90">X90  ( )</li>
+                        <li id="choose-updates-both">Oxford Tube and X90  (/)</li>
+                        </ul></div>
                 
-                <div data-role="content" id="resultX90" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a"></div>
+                <div data-role="content" id="updates-HoursBack-instructions" class="ui-updates-HoursBack-instructions">Display updates from the last:<ul class="list-a">
+                        <li id="choose-12-hours">12 hours  ( )</li>
+                        <li id="choose-24-hours">24 hours  (/)</li>
+                        <li id="choose-48-hours">48 hours  ( )</li>
+                        </ul></div>
                 
-                <div data-role="content" id="twitterOT" style="margin:15px; text-align:center; font-size:small; display:none" class="ui-panel-page-container-a">No Important Service Announcements<br>(via <a href='http://www.twitter.com/Oxford_Tube' id='OT-twitter-update'>Oxford Tube</a> Twitter)</div>
+                <div data-role="content" id="resultOT" class="ui-panel-page-container-c"></div>
                 
-                <div data-role="content" id="twitterX90" style="margin:15px; text-align:center; font-size:small; display:none" class="ui-panel-page-container-a">No Important Service Announcements<br>(via <a href='http://www.twitter.com/oxfordbusco' id='X90-twitter-update'>X90</a> Twitter)</div>
+                <div data-role="content" id="resultX90" class="ui-panel-page-container-c"></div>
                 
-                <div data-role="content" id="links" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a">                     <a href="http://x90.oxfordbus.co.uk/"  id="X90-Website-link">X90 Website</a>
+                <div data-role="content" id="updatesOT" class="ui-panel-twitter">No Important Service Announcements<br>(via <a href='http://www.twitter.com/Oxford_Tube' id='OT-twitter-update'>Oxford Tube</a> Twitter)</div>
+                
+                <div data-role="content" id="updatesX90" class="ui-panel-twitter">No Important Service Announcements<br>(via <a href='http://www.twitter.com/oxfordbusco' id='X90-twitter-update'>X90</a> Twitter)</div>
+                
+                <div data-role="content" id="links" class="ui-links">                     
+                    <a href="http://x90.oxfordbus.co.uk/"  id="X90-Website-link">X90 Website</a>
                     <br>
                     <br>
                     <a href="https://twitter.com/oxfordbusco"  id="X90-Twitter-link">X90 Twitter</a>
@@ -68,25 +82,11 @@
                     <br>
                     <a href="http://www.oxfordtube.com/buytickets.aspx"  id="Buy-tickets-link">Buy Oxford Tube Tickets</a>
                 </div>
-                
-                <div data-role="content" id="settings" style="margin:15px; text-align:center; display:none" class="ui-panel-page-container-a">
-                    Display Times and Service Updates for:
-                    <ul style='font-size:small; font-weight:bold; text-align:left; text-indent:10%; list-style-position:inside'>
-                        <li id="settings-oxford-tube">Oxford Tube  ( )</li>
-                        <li id="settings-X90">X90  ( )</li>
-                        <li id="settings-both">Oxford Tube and X90  (/)</li>
-                    </ul>
-                    Display Tweets from the past:
-                    <ul style='font-size:small; font-weight:bold; text-align:left; text-indent:10%; list-style-position:inside'>
-                        <li id="settings-12-hours">12 hours  ( )</li>
-                        <li id="settings-24-hours">24 hours  (/)</li>
-                        <li id="settings-48-hours">48 hours ( )</li>
-                    </ul>
-                </div>
-                    
-                
+
+                <a href="#menu-panel" id="menu-panel-button" class="ui-button-menu"></a>
+            
 <!--left hand panel-->                
-                <div data-role="panel" id="menu-panel" style="background-color:#0000CC">
+                <div data-role="panel" id="menu-panel" class="ui-panel-menu">
                     <a href="index.html" id="coach-times-menu-button">Coach Times</a>
                     <br><br>
                     <a href="index.html" id="service-updates-menu-button">Service Updates</a>
@@ -97,7 +97,7 @@
                 </div><!-- /panel -->
                 
             </div><!--close page-->
-            
+                    
             <script  type="text/javascript" src="OxCoach.js"></script>
            
 </body><!--close body-->

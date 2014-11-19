@@ -1,9 +1,9 @@
 {
   "name": "Ox Coach",
   
-  "description": "Access live Oxford Tube times",  
+  "description": "Access live Oxford-London coach times (Oxford Tube, X90)",  
   
-  "version": "0.6",
+  "version": "0.8",
   
   "launch_path": "/index.html",
   
