@@ -1,4 +1,3 @@
-
 body {
     background-color: #47F;
     padding: 0%;
@@ -48,24 +47,7 @@ h1 {
     z-index: 100;
 }
 
-.ui-panel-journeydetails {
-    font-size: x-small;
-    text-align: center;
-    color: #000;
-    background-color: #ACF;
-    position: fixed;
-    display: block;
-    top: 10%;
-    left: 0;
-    width: 100%;    
-    height: 6%;
-    margin: 0%;
-    padding: 3%;
-    font-family: arial, helvetica, serif;
-    z-index: 90;
-}
-
-.ui-panel-updatesdetails {
+.ui-panel-details {
     font-size: x-small;
     text-align: center;    
     display: none;
@@ -82,112 +64,52 @@ h1 {
     z-index: 90;
 }
 
-.ui-panel-page-container-c {
-    text-align: center;  
-    font-size: medium;
-    display: none;
-    padding: 5%;
-    margin: 5%;
-    position: absolute;    
-    top: 20%;
-    width: 80%;
-    align-self: flex-start;
-    color: #000;
-    background-color: #CEF;
-    font-family: arial, helvetica, serif;
-    z-index: 10;
-}
-
-.ui-panel-destination-instructions {
-    text-align: center;  
-    font-size: medium;
+.ui-filler {
     display: block;
+    position: static;
     padding: 5%;
     margin: 5%;
-    position: absolute;    
-    top: 20%;
-    width: 80%;
-    align-self: flex-start;    
-    color: #000;
-    background-color: #CEF;
-    font-family: arial, helvetica, serif;
-    z-index: 10;
+    width: 100%;    
+    height: 22%;
+    z-index: 50;
 }
 
-.ui-panel-departure-instructions {
+.ui-panel-times {
     text-align: center;  
     font-size: medium;
     display: none;
     padding: 5%;
     margin: 5%;
-    position: absolute;    
-    top: 20%;
+    position: static;
     width: 80%;
-    align-self: flex-start;    
     color: #000;
     background-color: #CEF;
     font-family: arial, helvetica, serif;
     z-index: 10;
 }
 
-.ui-panel-twitter {
+.ui-panel-instructions {
+    text-align: center;  
+    font-size: medium;
+    display: none;
+    padding: 5%;
+    margin: 5%;
+    position: static;
+    width: 80%;
+    color: #000;
+    background-color: #CEF;
+    font-family: arial, helvetica, serif;
+    z-index: 10;
+}
+
+.ui-panel-updates {
     text-align: center;  
     font-size: small;    
     display: none;
     padding: 5%;
     margin: 5%;
-    position: absolute;    
-    top: 20%;
+    position: static;
     width: 80%;
-    align-self: flex-start;    
-    color: #000;
-    background-color: #CEF;
-    font-family: arial, helvetica, serif;
-    z-index: 10;
-}
-
-.ui-coach-service-instructions {
-    text-align: center;  
-    font-size: medium;
-    display: none;
-    padding: 5%;
-    margin: 5%;
-    position: absolute;    
-    top: 20%;
-    width: 80%;
-    align-self: flex-start;    
-    color: #000;
-    background-color: #CEF;
-    font-family: arial, helvetica, serif;
-    z-index: 10;
-}
-
-.ui-updates-HoursBack-instructions {
-    text-align: center;  
-    font-size: medium;
-    display: none;
-    padding: 5%;
-    margin: 5%;
-    position: absolute;    
-    top: 20%;
-    width: 80%;
-    align-self: flex-start;
-    color: #000;
-    background-color: #CEF;
-    font-family: arial, helvetica, serif;
-    z-index: 10;
-}
-
-.ui-updates-coach-service-instructions {
-    text-align: center;  
-    font-size: medium;
-    display: none;
-    padding: 5%;
-    margin: 5%;
-    position: absolute;    
-    top: 20%;
-    width: 80%;    
-    align-self: flex-start;
     color: #000;
     background-color: #CEF;
     font-family: arial, helvetica, serif;
@@ -210,7 +132,6 @@ h1 {
     position: absolute;    
     top: 10%;
     width: 80%;
-    align-self: flex-start;
     color: #000;
     background-color: #CEF;
     font-family: arial, helvetica, serif;
@@ -226,7 +147,6 @@ h1 {
     position: absolute;    
     top: 10%;
     width: 80%;
-    align-self: flex-start;    
     color: #000;
     background-color: #CEF;
     font-family: arial, helvetica, serif;
